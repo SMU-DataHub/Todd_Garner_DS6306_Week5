@@ -1,0 +1,92 @@
+---
+title: "Todd_Garner_DF6306_Week5_Q2"
+author: "Todd Garner"
+date: "2023-01-31"
+output: powerpoint_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Question 2 - ## Question 2 - We previously used a dataset called FIFA Players.csv which contained information about Soccer players.  
+
+  1. **Use the string functions and regular expressions to assess a relationship between height and weight among soccer players.  To do this you will need to manipulate the height and weight columns into columns that have numeric values of the height and weight.  Tell your story using 2 – 4 PPT Slides.** 
+
+  2. **Next, assess this relationship between just the LB and LM positions.  (1 slide should do it.)**
+
+
+```{r}
+FIFA <- read.csv(file.choose(), header = TRUE)
+head(FIFA)
+str(FIFA)
+
+```
+
+
+The first thing we'll need to do is remove most of the unneeded rows.  Then, as in #1, we'll convert the height to inches and then take the pounds and remove the lbs from the back half of the number.  Let's dig in!
+
+```{r}
+library(tidyverse)
+FIFA_HW <- FIFA %>% select(c(Weight, Height))
+head(FIFA_HW)
+```
+We've made a data.frame with just Weight and Height in it.  Let's work on the Weight column first.  
+
+
+```{r}
+weight_none <- as.numeric(str_extract(FIFA$Weight,"\\d+"))
+head(weight_none)
+str(weight_none)
+
+feet_inches <- as.numeric(unlist(regmatches(FIFA$Height, gregexpr("\\d+", FIFA$Height))))
+feet = feet_inches[seq(1,length(feet_inches), by=2)]
+inches = feet_inches[seq(2,length(feet_inches), by=2)]
+
+# convert the feet and inches to total inches
+total_inches <- feet * 12 + inches
+head(total_inches)
+str(total_inches)
+
+FIFA_TOT <- data.frame(height = c(total_inches[1:18159]),
+                       weight = c(weight_none[1:18159]))
+
+head(FIFA_TOT)
+
+```
+I am going out on a limb by trying a regression plot using ggplot to show the relationship between height and weight of players.  If that proves unsatisfying, I'll try another.  
+```{r}
+
+library(ggplot2)
+ggplot(FIFA_TOT, aes(x = total_inches[1:18159], y = weight_none[1:18159])) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  xlab("Height (inches)") +
+  ylab("Weight (pounds)") +
+  ggtitle("Regression line - height and weight of soccer players")
+```
+## Part 2 of Part 2 - 2. **Next, assess this relationship between just the LB and LM positions.  (1 slide should do it.)**
+
+```{r}
+
+#FIFA_LM_LB <- data.frame(c(FIFA$Position[1:18159]), c(FIFA_TOT))
+#head(FIFA_LM_LB)
+
+#players <- FIFA$Position[1:18159]
+#head(players)
+
+#FIFA_LMB <- FIFA_LM_LB %>% filter(players == "LB"|players == "LM")
+#View(FIFA_LMB)
+
+#library(ggplot2)
+#data_filtered <- data.frame(Position[1:18159] = c("LB", "LM"))
+#player_height <- FIFA_LMB$height[1:18159]
+#player_weight <- FIFA_LMB$weight[1:18159]
+#ggplot(FIFA_LMB, aes(x = player_height, y = player_weight, color = FIFA$Position.1.18159)) +
+  #geom_smooth(method = "lm") +
+  #xlab("Height (inches)") +
+  #ylab("Weight (pounds)") +
+  #scale_color_manual(values = c("LB" = "blue", "LM" = "red")) +
+  #ggtitle("Weight & Height against LM and LB")
+```
+I have commented out the code on Part 2 of Question 2 so I can render it to PPT.  I have to turn this in at 1:00 p.m. and it's now 9:05 a.m. on Tuesday.  I need to turn to the other problems.  
